@@ -1,9 +1,8 @@
-import EmotionChatPage from "@/pages/emotionChatPage";
-import Image from "next/image";
+import EmotionChatPage from "@/pages/chabot/EmotionChatPage";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+    <div className="w-full min-h-screen">
      <EmotionChatPage />
     </div>
   );
