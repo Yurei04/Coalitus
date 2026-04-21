@@ -4,6 +4,8 @@ import { AnalysisView } from "@/components/chatbot/AnalysisView";
 import { ChatView } from "@/components/chatbot/ChatView";
 import { HistoryView } from "@/components/chatbot/HistoryView";
 import { SettingsView } from "@/components/chatbot/SettingsView";
+import { TriageView } from "@/components/chatbot/TriageView";
+import { ModelsView } from "@/components/chatbot/ModelsView";
 import { LeftSidebar } from "@/components/nav/LeftSidebar";
 import { RightSidebar } from "@/components/nav/RightSidebar";
 import { TopBar } from "@/components/nav/TopBar";
@@ -12,7 +14,6 @@ import { useState, useCallback } from "react";
 
 import { MODELS } from "@/lib/constants";
 import { callHuggingFace, buildConsensus } from "@/lib/helpers";
- 
 
 const INITIAL_MESSAGE = {
   id: 1,
@@ -24,20 +25,18 @@ const INITIAL_MESSAGE = {
 
 export default function EmotionChatPage() {
   /* ── Layout state ── */
-  const [leftOpen, setLeftOpen] = useState(true);
+  const [leftOpen, setLeftOpen]   = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("chat");
 
   /* ── Chat state ── */
-  const [messages, setMessages] = useState([INITIAL_MESSAGE]);
-  const [input, setInput] = useState("");
+  const [messages, setMessages]   = useState([INITIAL_MESSAGE]);
+  const [input, setInput]         = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   /* ── Model state ── */
-  const [modelOrder, setModelOrder] = useState(MODELS.map((m) => m.id));
-  const [enabledModels, setEnabledModels] = useState(
-    new Set(MODELS.map((m) => m.id))
-  );
+  const [modelOrder, setModelOrder]     = useState(MODELS.map((m) => m.id));
+  const [enabledModels, setEnabledModels] = useState(new Set(MODELS.map((m) => m.id)));
   const [modelResults, setModelResults] = useState({});
 
   /* ── Drag state ── */
@@ -45,11 +44,8 @@ export default function EmotionChatPage() {
   const [dragOverModel, setDragOverModel] = useState(null);
 
   /* ── Derived ── */
-  const orderedModels = modelOrder
-    .map((id) => MODELS.find((m) => m.id === id))
-    .filter(Boolean);
-
-  const consensusScores = buildConsensus(modelResults, enabledModels);
+  const orderedModels    = modelOrder.map((id) => MODELS.find((m) => m.id === id)).filter(Boolean);
+  const consensusScores  = buildConsensus(modelResults, enabledModels);
 
   /* ── Handlers ── */
   const toggleModel = useCallback((id) => {
@@ -60,48 +56,32 @@ export default function EmotionChatPage() {
     });
   }, []);
 
-  const runAnalysis = useCallback(
-    async (text) => {
-      const active = MODELS.filter((m) => enabledModels.has(m.id));
-      const entries = await Promise.all(
-        active.map(async (m) => [m.id, await callHuggingFace(text, m.hfId)])
-      );
-      setModelResults((prev) => ({
-        ...prev,
-        ...Object.fromEntries(entries),
-      }));
-    },
-    [enabledModels]
-  );
+  const runAnalysis = useCallback(async (text) => {
+    const active = MODELS.filter((m) => enabledModels.has(m.id));
+    const entries = await Promise.all(
+      active.map(async (m) => [m.id, await callHuggingFace(text, m.hfId)])
+    );
+    setModelResults((prev) => ({ ...prev, ...Object.fromEntries(entries) }));
+  }, [enabledModels]);
 
   const sendMessage = useCallback(async () => {
     const text = input.trim();
     if (!text || isLoading) return;
 
-    const userMsg = {
-      id: Date.now(),
-      role: "user",
-      content: text,
-      timestamp: new Date(),
-    };
+    const userMsg = { id: Date.now(), role: "user", content: text, timestamp: new Date() };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
     runAnalysis(text);
 
     try {
-      const history = messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      const history = messages.map((m) => ({ role: m.role, content: m.content }));
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...history, { role: "user", content: text }],
-        }),
+        body: JSON.stringify({ messages: [...history, { role: "user", content: text }] }),
       });
-      const data = await res.json();
+      const data  = await res.json();
       const reply = data.content ?? "Signal lost. Reconnecting…";
       setMessages((prev) => [
         ...prev,
@@ -111,12 +91,7 @@ export default function EmotionChatPage() {
     } catch {
       setMessages((prev) => [
         ...prev,
-        {
-          id: Date.now() + 1,
-          role: "assistant",
-          content: "⚠ Connection error. Check Settings.",
-          timestamp: new Date(),
-        },
+        { id: Date.now() + 1, role: "assistant", content: "⚠ Connection error. Check Settings.", timestamp: new Date() },
       ]);
     } finally {
       setIsLoading(false);
@@ -124,28 +99,19 @@ export default function EmotionChatPage() {
   }, [input, isLoading, messages, runAnalysis]);
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   };
 
   /* ── Drag handlers ── */
-  const handleDragStart = (e, id) => {
-    setDraggedModel(id);
-    e.dataTransfer.effectAllowed = "move";
-  };
-  const handleDragOver = (e, id) => {
-    e.preventDefault();
-    setDragOverModel(id);
-  };
+  const handleDragStart = (e, id) => { setDraggedModel(id); e.dataTransfer.effectAllowed = "move"; };
+  const handleDragOver  = (e, id) => { e.preventDefault(); setDragOverModel(id); };
   const handleDrop = (e, targetId) => {
     e.preventDefault();
     if (!draggedModel || draggedModel === targetId) return;
     setModelOrder((prev) => {
-      const arr = [...prev];
+      const arr  = [...prev];
       const from = arr.indexOf(draggedModel);
-      const to = arr.indexOf(targetId);
+      const to   = arr.indexOf(targetId);
       arr.splice(from, 1);
       arr.splice(to, 0, draggedModel);
       return arr;
@@ -153,10 +119,7 @@ export default function EmotionChatPage() {
     setDraggedModel(null);
     setDragOverModel(null);
   };
-  const handleDragEnd = () => {
-    setDraggedModel(null);
-    setDragOverModel(null);
-  };
+  const handleDragEnd = () => { setDraggedModel(null); setDragOverModel(null); };
 
   /* ── Render ── */
   return (
@@ -176,7 +139,7 @@ export default function EmotionChatPage() {
           <TopBar activeTab={activeTab} enabledModels={enabledModels} />
 
           <div className="flex-1 overflow-hidden flex flex-col">
-            {activeTab === "chat" && (
+            {activeTab === "chat"     && (
               <ChatView
                 messages={messages}
                 isLoading={isLoading}
@@ -193,9 +156,9 @@ export default function EmotionChatPage() {
                 enabledModels={enabledModels}
               />
             )}
-            {activeTab === "history" && (
-              <HistoryView messages={messages} />
-            )}
+            {activeTab === "triage"   && <TriageView />}
+            {activeTab === "models"   && <ModelsView />}
+            {activeTab === "history"  && <HistoryView messages={messages} />}
             {activeTab === "settings" && <SettingsView />}
           </div>
         </main>
