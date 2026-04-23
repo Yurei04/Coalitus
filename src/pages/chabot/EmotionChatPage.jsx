@@ -1,11 +1,11 @@
 "use client";
 
 import { AnalysisView } from "@/components/chatbot/AnalysisView";
-import { ChatView } from "@/components/chatbot/ChatView";
+import { ChatView } from "@/components/chatbot/ChatView"; 
 import { HistoryView } from "@/components/chatbot/HistoryView";
-import { SettingsView } from "@/components/chatbot/SettingsView";
 import { TriageView } from "@/components/chatbot/TriageView";
 import { ModelsView } from "@/components/chatbot/ModelsView";
+import { HomeView } from "../home/HomeView"; 
 import { LeftSidebar } from "@/components/nav/LeftSidebar";
 import { RightSidebar } from "@/components/nav/RightSidebar";
 import { TopBar } from "@/components/nav/TopBar";
@@ -27,7 +27,8 @@ export default function EmotionChatPage() {
   /* ── Layout state ── */
   const [leftOpen, setLeftOpen]   = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState("chat");
+  /* Home is the default landing tab */
+  const [activeTab, setActiveTab] = useState("home");
 
   /* ── Chat state ── */
   const [messages, setMessages]   = useState([INITIAL_MESSAGE]);
@@ -35,17 +36,17 @@ export default function EmotionChatPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   /* ── Model state ── */
-  const [modelOrder, setModelOrder]     = useState(MODELS.map((m) => m.id));
+  const [modelOrder, setModelOrder]       = useState(MODELS.map((m) => m.id));
   const [enabledModels, setEnabledModels] = useState(new Set(MODELS.map((m) => m.id)));
-  const [modelResults, setModelResults] = useState({});
+  const [modelResults, setModelResults]   = useState({});
 
   /* ── Drag state ── */
-  const [draggedModel, setDraggedModel] = useState(null);
+  const [draggedModel, setDraggedModel]   = useState(null);
   const [dragOverModel, setDragOverModel] = useState(null);
 
   /* ── Derived ── */
-  const orderedModels    = modelOrder.map((id) => MODELS.find((m) => m.id === id)).filter(Boolean);
-  const consensusScores  = buildConsensus(modelResults, enabledModels);
+  const orderedModels   = modelOrder.map((id) => MODELS.find((m) => m.id === id)).filter(Boolean);
+  const consensusScores = buildConsensus(modelResults, enabledModels);
 
   /* ── Handlers ── */
   const toggleModel = useCallback((id) => {
@@ -76,7 +77,7 @@ export default function EmotionChatPage() {
 
     try {
       const history = messages.map((m) => ({ role: m.role, content: m.content }));
-      const res = await fetch("/api/chat", {
+      const res  = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: [...history, { role: "user", content: text }] }),
@@ -121,10 +122,37 @@ export default function EmotionChatPage() {
   };
   const handleDragEnd = () => { setDraggedModel(null); setDragOverModel(null); };
 
-  /* ── Render ── */
+  /* ── When on the home tab, render HomeView full-screen without chrome ── */
+  if (activeTab === "home") {
+    return (
+      <HomeView onEnter={() => setActiveTab("chat")} />
+    );
+  }
+
+  /* ── App shell (all other tabs) ── */
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex h-screen bg-[#0a0a0b] overflow-hidden">
+      <div className="flex h-screen overflow-hidden relative" style={{ background: "#0c0e12" }}>
+
+        {/* ── Global ambient layer ── */}
+        <div className="pointer-events-none fixed inset-0 z-0">
+          {/* Dot grid */}
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.055) 1px, transparent 1px)",
+              backgroundSize: "24px 24px",
+            }}
+          />
+          {/* Green bleed — top-left */}
+          <div style={{ position: "absolute", top: -200, left: -150, width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, rgba(74,222,128,0.07) 0%, transparent 65%)" }} />
+          {/* Cyan bleed — top-right */}
+          <div style={{ position: "absolute", top: -100, right: -200, width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(34,211,238,0.06) 0%, transparent 65%)" }} />
+          {/* Purple bleed — bottom-center */}
+          <div style={{ position: "absolute", bottom: -200, left: "35%", width: 800, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(167,139,250,0.06) 0%, transparent 65%)" }} />
+          {/* Pink bleed — bottom-right */}
+          <div style={{ position: "absolute", bottom: -80, right: -60, width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(244,114,182,0.05) 0%, transparent 65%)" }} />
+        </div>
 
         <LeftSidebar
           open={leftOpen}
@@ -135,7 +163,7 @@ export default function EmotionChatPage() {
           enabledModels={enabledModels}
         />
 
-        <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
           <TopBar activeTab={activeTab} enabledModels={enabledModels} />
 
           <div className="flex-1 overflow-hidden flex flex-col">
@@ -159,7 +187,6 @@ export default function EmotionChatPage() {
             {activeTab === "triage"   && <TriageView />}
             {activeTab === "models"   && <ModelsView />}
             {activeTab === "history"  && <HistoryView messages={messages} />}
-            {activeTab === "settings" && <SettingsView />}
           </div>
         </main>
 
