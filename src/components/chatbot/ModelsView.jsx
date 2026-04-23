@@ -1,120 +1,79 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronDown, ExternalLink, Brain, HeartPulse, BookOpen, GraduationCap, Copy, Check } from "lucide-react";
 import { MY_MODELS, API_SPACE_URL } from "@/lib/constants";
 
+const MODEL_ICONS = [Brain, HeartPulse, BookOpen, GraduationCap];
+
+/* ─── code snippets ─────────────────────────────────────── */
 const JS_SNIPPETS = {
-  emotion: `// Via the unified API (recommended)
-const res = await fetch(\`\${API_SPACE_URL}/analyze\`, {
+  emotion: `const res = await fetch(\`\${API_SPACE_URL}/analyze\`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ text: "I feel so hopeless today." }),
 });
 const { emotion } = await res.json();
-// { label: "sadness", confidence: 0.97, scores: { ... } }`,
+// { label: "sadness", confidence: 0.97 }`,
 
-  topic: `// Via the unified API (recommended)
-const res = await fetch(\`\${API_SPACE_URL}/analyze\`, {
+  topic: `const res = await fetch(\`\${API_SPACE_URL}/analyze\`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ text: "I can't sleep, I keep overthinking." }),
 });
 const { topic } = await res.json();
-// { label: "sleep_issues", confidence: 0.89, scores: { ... } }`,
+// { label: "sleep_issues", confidence: 0.89 }`,
 
-  distortion: `// Via the unified API (recommended)
-const res = await fetch(\`\${API_SPACE_URL}/analyze\`, {
+  distortion: `const res = await fetch(\`\${API_SPACE_URL}/analyze\`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    text: "I always mess everything up.",
-    distortion_threshold: 0.5,
-  }),
+  body: JSON.stringify({ text: "I always mess everything up.", distortion_threshold: 0.5 }),
 });
 const { distortion } = await res.json();
-// { has_distortions: true,
-//   detected: [{ label: "overgeneralization", confidence: 0.82 }] }`,
+// { has_distortions: true, detected: [...] }`,
 
-  stress: `// Stress model uses its own endpoint
-const res = await fetch(\`\${API_SPACE_URL}/stress\`, {
+  stress: `const res = await fetch(\`\${API_SPACE_URL}/stress\`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    anxiety_level: 15,       self_esteem: 10,
-    mental_health_history: 1, depression: 18,
-    headache: 4,             blood_pressure: 2,
-    sleep_quality: 1,        breathing_problem: 3,
-    noise_level: 3,          living_conditions: 2,
-    safety: 2,               basic_needs: 2,
-    academic_performance: 2, study_load: 4,
-    teacher_student_relationship: 2,
-    future_career_concerns: 4,
-    social_support: 1,       peer_pressure: 4,
-    extracurricular_activities: 2, bullying: 3,
-  }),
+  body: JSON.stringify({ anxiety_level: 15, depression: 18, sleep_quality: 1, ... }),
 });
 const { label, confidence } = await res.json();
-// { label: "high", confidence: 0.86, scores: { ... } }`,
+// { label: "high", confidence: 0.86 }`,
 };
 
 const PY_SNIPPETS = {
   emotion: `import requests
-
 r = requests.post(f"{API_SPACE_URL}/analyze", json={
     "text": "I feel so hopeless today."
 })
-data = r.json()
-print(data["emotion"])
-# {"label": "sadness", "confidence": 0.97, "scores": {...}}`,
+print(r.json()["emotion"])
+# {"label": "sadness", "confidence": 0.97}`,
 
   topic: `import requests
-
 r = requests.post(f"{API_SPACE_URL}/analyze", json={
     "text": "I can't sleep, I keep overthinking."
 })
-data = r.json()
-print(data["topic"])
-# {"label": "sleep_issues", "confidence": 0.89, "scores": {...}}`,
+print(r.json()["topic"])
+# {"label": "sleep_issues", "confidence": 0.89}`,
 
   distortion: `import requests
-
 r = requests.post(f"{API_SPACE_URL}/analyze", json={
     "text": "I always mess everything up.",
     "distortion_threshold": 0.5,
 })
-data = r.json()
-print(data["distortion"])
-# {"has_distortions": True,
-#  "detected": [{"label": "overgeneralization", "confidence": 0.82}]}`,
+print(r.json()["distortion"])
+# {"has_distortions": True, "detected": [...]}`,
 
   stress: `import requests
-
 r = requests.post(f"{API_SPACE_URL}/stress", json={
-    "anxiety_level": 15,       "self_esteem": 10,
-    "mental_health_history": 1, "depression": 18,
-    "headache": 4,             "blood_pressure": 2,
-    "sleep_quality": 1,        "breathing_problem": 3,
-    "noise_level": 3,          "living_conditions": 2,
-    "safety": 2,               "basic_needs": 2,
-    "academic_performance": 2, "study_load": 4,
-    "teacher_student_relationship": 2,
-    "future_career_concerns": 4,
-    "social_support": 1,       "peer_pressure": 4,
-    "extracurricular_activities": 2, "bullying": 3,
+    "anxiety_level": 15, "depression": 18, "sleep_quality": 1,
+    # ... other fields
 })
 print(r.json())
-# {"label": "high", "confidence": 0.86, "scores": {...}}`,
+# {"label": "high", "confidence": 0.86}`,
 };
 
-const card = {
-  background: "rgba(22,24,28,0.98)",
-  border: "1px solid rgba(74,222,128,0.12)",
-  borderRadius: 14,
-  padding: "20px",
-  cursor: "pointer",
-  transition: "all 0.2s",
-};
-
+/* ─── CodeBlock ─────────────────────────────────────────── */
 function CodeBlock({ code, color }) {
   const [copied, setCopied] = useState(false);
 
@@ -125,28 +84,32 @@ function CodeBlock({ code, color }) {
   }
 
   return (
-    <div style={{ position: "relative", marginTop: 10 }}>
-      <pre style={{
-        background: "rgba(0,0,0,0.5)",
-        border: "1px solid rgba(255,255,255,0.06)",
-        borderRadius: 10,
-        padding: "14px 16px",
-        fontSize: 11.5,
-        lineHeight: 1.75,
-        color: "#a1a1aa",
-        overflowX: "auto",
-        margin: 0,
-        whiteSpace: "pre",
-      }}>
+    <div className="relative mt-3">
+      <pre
+        className="rounded-xl px-4 py-3.5 text-[11.5px] leading-[1.8] overflow-x-auto"
+        style={{
+          background: "rgba(0,0,0,0.4)",
+          border: "1px solid rgba(255,255,255,0.06)",
+          color: "rgba(255,255,255,0.4)",
+          fontFamily: "'Space Mono', monospace",
+          margin: 0,
+          whiteSpace: "pre",
+        }}
+      >
         {code.split("\n").map((line, i) => {
-          if (line.trim().startsWith("//") || line.trim().startsWith("#")) {
-            return <span key={i} style={{ color: "rgba(74,222,128,0.45)", display: "block" }}>{line}</span>;
+          const isComment = line.trim().startsWith("//") || line.trim().startsWith("#");
+          if (isComment) {
+            return (
+              <span key={i} style={{ display: "block", color: "rgba(57,255,142,0.38)" }}>
+                {line}
+              </span>
+            );
           }
           const parts = line.split(/("[^"]*"|'[^']*')/g);
           return (
             <span key={i} style={{ display: "block" }}>
               {parts.map((p, j) =>
-                (p.startsWith('"') || p.startsWith("'"))
+                p.startsWith('"') || p.startsWith("'")
                   ? <span key={j} style={{ color: "#fbbf24" }}>{p}</span>
                   : <span key={j}>{p}</span>
               )}
@@ -154,21 +117,27 @@ function CodeBlock({ code, color }) {
           );
         })}
       </pre>
+
       <button
         onClick={(e) => { e.stopPropagation(); copy(); }}
-        className="absolute top-2.5 right-2.5 text-[10px] px-2.5 py-1 rounded-lg transition-all"
+        className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all duration-150"
         style={{
-          background: copied ? `${color}25` : "rgba(255,255,255,0.05)",
-          color:      copied ? color        : "#52525b",
-          border:     `1px solid ${copied ? color + "40" : "rgba(255,255,255,0.08)"}`,
+          background: copied ? `${color}18` : "rgba(255,255,255,0.04)",
+          border: `1px solid ${copied ? color + "35" : "rgba(255,255,255,0.07)"}`,
+          color: copied ? color : "rgba(255,255,255,0.25)",
+          fontFamily: "'Space Mono', monospace",
+          fontSize: 10,
+          cursor: "pointer",
         }}
       >
-        {copied ? "✓ Copied" : "Copy"}
+        {copied ? <Check size={10} /> : <Copy size={10} />}
+        {copied ? "Copied" : "Copy"}
       </button>
     </div>
   );
 }
 
+/* ─── ModelsView ─────────────────────────────────────────── */
 export function ModelsView() {
   const [expanded, setExpanded] = useState(null);
   const [tabs, setTabs]         = useState({});
@@ -177,103 +146,194 @@ export function ModelsView() {
   const setTab = (id, t) => setTabs((p) => ({ ...p, [id]: t }));
 
   return (
-    <div className="flex-1 overflow-y-auto p-6" style={{ background: "#0a0a0b" }}>
-      <div className="max-w-3xl mx-auto space-y-5">
+    <>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap');`}</style>
 
-        <div>
-          <h2 className="text-lg font-semibold" style={{ color: "#d1fae5" }}>🤖 Our Models</h2>
-          <p className="text-sm mt-1" style={{ color: "#52525b" }}>
-            4 custom-trained NLP models powering this app. Click any card to see details and code.
-          </p>
-        </div>
+      <div
+        className="flex-1 overflow-y-auto p-6"
+        style={{ background: "rgba(0,9,29,0.98)" }}
+      >
+        <div className="max-w-2xl mx-auto space-y-4">
 
-        <div className="space-y-3">
-          {MY_MODELS.map((m) => {
+          {/* heading */}
+          <div className="mb-6">
+            <h2
+              className="text-xl font-extrabold mb-1"
+              style={{
+                fontFamily: "'Syne', sans-serif",
+                background: "linear-gradient(135deg,#d1fae5,#86efac)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              Our Models
+            </h2>
+            <p
+              className="text-sm"
+              style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.25)" }}
+            >
+              4 custom NLP models — click any card to see details & code snippets.
+            </p>
+          </div>
+
+          {/* cards */}
+          {MY_MODELS.map((m, index) => {
             const isOpen = expanded === m.id;
             const tab    = getTab(m.id);
+            const Icon   = MODEL_ICONS[index % MODEL_ICONS.length];
 
             return (
               <div
                 key={m.id}
-                onClick={() => setExpanded(isOpen ? null : m.id)}
+                className="rounded-xl overflow-hidden transition-all duration-200"
                 style={{
-                  ...card,
-                  border:    isOpen ? `1px solid ${m.color}50` : "1px solid rgba(74,222,128,0.12)",
-                  boxShadow: isOpen ? `0 0 20px ${m.glow}`     : "none",
+                  background: isOpen ? `${m.color}06` : "rgba(255,255,255,0.025)",
+                  border: `1px solid ${isOpen ? m.color + "35" : "rgba(255,255,255,0.07)"}`,
+                  boxShadow: isOpen ? `0 0 24px ${m.color}10` : "none",
                 }}
-                onMouseEnter={e => { if (!isOpen) e.currentTarget.style.borderColor = "rgba(74,222,128,0.3)"; }}
-                onMouseLeave={e => { if (!isOpen) e.currentTarget.style.borderColor = "rgba(74,222,128,0.12)"; }}
               >
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
-                      style={{ background: `${m.color}18`, border: `1px solid ${m.color}40`, boxShadow: `0 0 10px ${m.glow}` }}>
-                      {m.emoji}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold" style={{ color: "#d1fae5" }}>{m.name}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                          style={{ background: `${m.color}18`, color: m.color, border: `1px solid ${m.color}30` }}>
-                          {m.badge}
-                        </span>
-                      </div>
-                      <p className="text-xs mt-0.5" style={{ color: "#52525b" }}>{m.architecture}</p>
-                    </div>
+                {/* header — always visible */}
+                <button
+                  className="w-full flex items-center gap-3 px-5 py-4 text-left transition-colors duration-150"
+                  style={{ cursor: "pointer", background: "transparent", border: "none" }}
+                  onClick={() => setExpanded(isOpen ? null : m.id)}
+                >
+                  {/* icon */}
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                    style={{
+                      background: `${m.color}12`,
+                      border: `1px solid ${m.color}28`,
+                    }}
+                  >
+                    <Icon size={17} style={{ color: m.color }} strokeWidth={1.7} />
                   </div>
-                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
-                    style={{ color: "rgba(74,222,128,0.4)", transform: isOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", flexShrink: 0 }}>
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </div>
 
-                {/* Expanded */}
+                  {/* name + arch */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span
+                        className="text-sm font-bold"
+                        style={{ fontFamily: "'Syne', sans-serif", color: "rgba(255,255,255,0.82)" }}
+                      >
+                        {m.name}
+                      </span>
+                      <span
+                        className="text-[9px] px-2 py-0.5 rounded-full tracking-widest"
+                        style={{
+                          fontFamily: "'Space Mono', monospace",
+                          background: `${m.color}12`,
+                          border: `1px solid ${m.color}25`,
+                          color: m.color,
+                        }}
+                      >
+                        {m.badge}
+                      </span>
+                    </div>
+                    <p
+                      className="text-[11px] mt-0.5 truncate"
+                      style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.22)" }}
+                    >
+                      {m.architecture}
+                    </p>
+                  </div>
+
+                  <ChevronDown
+                    size={15}
+                    strokeWidth={2}
+                    style={{
+                      color: isOpen ? m.color : "rgba(255,255,255,0.2)",
+                      transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                      transition: "transform 0.2s, color 0.2s",
+                      flexShrink: 0,
+                    }}
+                  />
+                </button>
+
+                {/* expanded body */}
                 {isOpen && (
-                  <div className="mt-4 space-y-4" onClick={(e) => e.stopPropagation()}
-                    style={{ borderTop: `1px solid ${m.color}20`, paddingTop: 16 }}>
+                  <div
+                    className="px-5 pb-5 space-y-4"
+                    style={{ borderTop: `1px solid ${m.color}15` }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* description */}
+                    <p
+                      className="text-sm leading-relaxed pt-4"
+                      style={{ color: "rgba(255,255,255,0.42)" }}
+                    >
+                      {m.description}
+                    </p>
 
-                    <p className="text-sm leading-relaxed" style={{ color: "#a1a1aa" }}>{m.description}</p>
-
-                    {/* Labels */}
+                    {/* labels */}
                     <div>
-                      <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "rgba(74,222,128,0.5)" }}>Output Labels</p>
+                      <p
+                        className="text-[10px] uppercase tracking-[0.18em] mb-2"
+                        style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.22)" }}
+                      >
+                        Output Labels
+                      </p>
                       <div className="flex flex-wrap gap-1.5">
                         {m.labels.map((label) => (
-                          <span key={label} className="text-xs px-2.5 py-1 rounded-lg"
-                            style={{ background: `${m.color}10`, color: m.color, border: `1px solid ${m.color}25` }}>
+                          <span
+                            key={label}
+                            className="text-[11px] px-2.5 py-0.5 rounded-lg"
+                            style={{
+                              fontFamily: "'Space Mono', monospace",
+                              background: `${m.color}0a`,
+                              border: `1px solid ${m.color}20`,
+                              color: m.color,
+                            }}
+                          >
                             {label.replace(/_/g, " ")}
                           </span>
                         ))}
                       </div>
                     </div>
 
-                    {/* Use cases */}
-                    <div>
-                      <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: "rgba(74,222,128,0.5)" }}>Use Cases</p>
-                      <p className="text-xs" style={{ color: "#71717a" }}>{m.useCase}</p>
-                    </div>
+                    {/* use case */}
+                    {m.useCase && (
+                      <div>
+                        <p
+                          className="text-[10px] uppercase tracking-[0.18em] mb-1"
+                          style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.22)" }}
+                        >
+                          Use Cases
+                        </p>
+                        <p className="text-xs" style={{ color: "rgba(255,255,255,0.32)" }}>
+                          {m.useCase}
+                        </p>
+                      </div>
+                    )}
 
-                    {/* Code */}
+                    {/* code */}
                     <div>
                       <div className="flex items-center justify-between mb-1">
-                        <p className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(74,222,128,0.5)" }}>
+                        <p
+                          className="text-[10px] uppercase tracking-[0.18em]"
+                          style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.22)" }}
+                        >
                           How to Use
                         </p>
-                        <div className="flex rounded-lg overflow-hidden"
-                          style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
+                        {/* lang tabs */}
+                        <div
+                          className="flex rounded-lg overflow-hidden"
+                          style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+                        >
                           {["js", "python"].map((lang) => (
                             <button
                               key={lang}
                               onClick={() => setTab(m.id, lang)}
-                              className="text-[10px] px-3 py-1 transition-all"
+                              className="text-[10px] px-3 py-1 transition-colors duration-150"
                               style={{
-                                background: tab === lang ? `${m.color}20` : "transparent",
-                                color:      tab === lang ? m.color         : "#52525b",
+                                fontFamily: "'Space Mono', monospace",
+                                background: tab === lang ? `${m.color}18` : "transparent",
+                                color: tab === lang ? m.color : "rgba(255,255,255,0.22)",
                                 borderRight: lang === "js" ? "1px solid rgba(255,255,255,0.08)" : "none",
+                                cursor: "pointer",
                               }}
                             >
-                              {lang === "js" ? "JavaScript" : "Python"}
+                              {lang === "js" ? "JS" : "Python"}
                             </button>
                           ))}
                         </div>
@@ -289,33 +349,41 @@ export function ModelsView() {
                       href={m.hfUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-xs px-4 py-2 rounded-xl font-medium transition-all"
-                      style={{ background: `${m.color}15`, color: m.color, border: `1px solid ${m.color}35` }}
-                      onMouseEnter={e => { e.currentTarget.style.background = `${m.color}25`; e.currentTarget.style.boxShadow = `0 0 12px ${m.glow}`; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = `${m.color}15`; e.currentTarget.style.boxShadow = "none"; }}
+                      className="inline-flex items-center gap-2 text-xs px-4 py-2 rounded-xl transition-all duration-150"
+                      style={{
+                        fontFamily: "'Space Mono', monospace",
+                        background: `${m.color}0f`,
+                        color: m.color,
+                        border: `1px solid ${m.color}30`,
+                        textDecoration: "none",
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = `${m.color}1e`;
+                        e.currentTarget.style.boxShadow  = `0 0 14px ${m.color}20`;
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = `${m.color}0f`;
+                        e.currentTarget.style.boxShadow  = "none";
+                      }}
                     >
-                      <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                        <polyline points="15 3 21 3 21 9" />
-                        <line x1="10" y1="14" x2="21" y2="3" />
-                      </svg>
+                      <ExternalLink size={12} strokeWidth={1.8} />
                       View on Hugging Face
                     </a>
-
                   </div>
                 )}
               </div>
             );
           })}
-        </div>
 
-        <div className="text-center pt-2">
-          <p className="text-xs" style={{ color: "#3f3f46" }}>
+          {/* footer note */}
+          <p
+            className="text-center text-[10px] pt-2"
+            style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.12)" }}
+          >
             All models are free and open · Hosted on Hugging Face Spaces · No API key needed
           </p>
         </div>
-
       </div>
-    </div>
+    </>
   );
 }

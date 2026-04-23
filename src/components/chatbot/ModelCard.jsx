@@ -1,6 +1,7 @@
-import { Switch } from "@/components/ui/switch";
-import { cn } from "@/lib/utils";
-import { EmotionBar } from "./EmotionBar"; 
+"use client";
+
+import { GripVertical, ToggleLeft, ToggleRight } from "lucide-react";
+import { EmotionBar } from "./EmotionBar";
 import { fmt, topEmotion } from "@/lib/helpers";
 
 export function ModelCard({
@@ -15,110 +16,139 @@ export function ModelCard({
   onDrop,
   onDragEnd,
 }) {
-  const scores = results?.[model.id];
-  const top = topEmotion(scores);
+  const scores     = results?.[model.id];
+  const top        = topEmotion(scores);
   const isDragging = dragging === model.id;
-  const isOver = dragOver === model.id;
+  const isOver     = dragOver === model.id && !isDragging;
 
   return (
     <div
       draggable
       onDragStart={(e) => onDragStart(e, model.id)}
-      onDragOver={(e) => onDragOver(e, model.id)}
-      onDrop={(e) => onDrop(e, model.id)}
+      onDragOver={(e)  => { e.preventDefault(); onDragOver(e, model.id); }}
+      onDrop={(e)      => onDrop(e, model.id)}
       onDragEnd={onDragEnd}
-      className={cn(
-        "rounded-xl p-3.5 mb-2.5 cursor-grab select-none transition-all duration-200",
-        isDragging ? "opacity-40 scale-95" : "opacity-100",
-        isOver ? "scale-[1.02]" : ""
-      )}
+      className="rounded-xl mb-2 select-none"
       style={{
-        background: isOver ? `${model.color}08` : "rgba(255,255,255,0.03)",
-        border: `1px solid ${
-          isOver
-            ? model.color + "50"
-            : isDragging
-            ? model.color + "60"
-            : "rgba(255,255,255,0.07)"
-        }`,
-        boxShadow: isOver ? `0 0 20px ${model.glow}` : "none",
+        background: isOver ? `${model.color}0a` : "rgba(255,255,255,0.025)",
+        border: `1px solid ${isOver ? model.color + "40" : isDragging ? model.color + "50" : "rgba(255,255,255,0.07)"}`,
+        opacity: isDragging ? 0.45 : 1,
+        cursor: "grab",
+        transition: "border-color 0.15s, opacity 0.15s",
       }}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      {/* ── header row ── */}
+      <div className="flex items-center justify-between px-3.5 pt-3.5 pb-3">
         <div className="flex items-center gap-2.5">
-          <span className="text-zinc-700 cursor-grab text-sm leading-none select-none">
-            ⠿
-          </span>
+          {/* grip */}
+          <GripVertical
+            size={14}
+            strokeWidth={1.5}
+            style={{ color: "rgba(255,255,255,0.18)", flexShrink: 0 }}
+          />
+
+          {/* status dot */}
           <div
-            className="w-2 h-2 rounded-full transition-all duration-500"
+            className="w-1.5 h-1.5 rounded-full shrink-0"
             style={{
-              background: enabled ? model.color : "rgba(255,255,255,0.1)",
-              boxShadow: enabled ? `0 0 8px ${model.color}` : "none",
+              background: enabled ? model.color : "rgba(255,255,255,0.12)",
+              boxShadow: enabled ? `0 0 6px ${model.color}` : "none",
             }}
           />
-          <span className="text-sm font-semibold text-zinc-200">
-            {model.name}
-          </span>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <span
-            className="text-[10px] px-1.5 py-0.5 rounded-md font-medium"
-            style={{
-              color: model.color,
-              background: model.glow,
-              border: `1px solid ${model.color}30`,
-            }}
-          >
-            {model.badge}
-          </span>
-          <Switch
-            checked={enabled}
-            onCheckedChange={() => onToggle(model.id)}
-            className="scale-75"
-          />
-        </div>
-      </div>
-
-      {/* Results */}
-      {enabled && scores ? (
-        <div>
-          {Object.entries(scores)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 4)
-            .map(([label, score]) => (
-              <EmotionBar key={label} label={label} score={score} color={model.color} />
-            ))}
-
-          {top && (
-            <div
-              className="mt-2.5 px-3 py-2 rounded-lg flex items-center justify-between"
+          {/* name + badge */}
+          <div className="flex flex-col">
+            <span
+              className="text-[13px] font-semibold leading-tight"
+              style={{ color: enabled ? "rgba(255,255,255,0.82)" : "rgba(255,255,255,0.35)" }}
+            >
+              {model.name}
+            </span>
+            <span
+              className="text-[9px] tracking-widest"
               style={{
-                background: `${model.color}0d`,
-                border: `1px solid ${model.color}20`,
+                fontFamily: "'Space Mono', monospace",
+                color: enabled ? model.color : "rgba(255,255,255,0.18)",
               }}
             >
-              <span className="text-[10px] text-zinc-500 uppercase tracking-widest">
-                dominant
-              </span>
-              <span
-                className="text-xs font-semibold capitalize"
-                style={{ color: model.color }}
-              >
-                {top[0]} · {fmt(top[1])}
-              </span>
-            </div>
+              {model.badge}
+            </span>
+          </div>
+        </div>
+
+        {/* toggle */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggle(model.id); }}
+          className="flex items-center shrink-0 transition-colors duration-150"
+          style={{ color: enabled ? model.color : "rgba(255,255,255,0.2)", cursor: "pointer" }}
+        >
+          {enabled
+            ? <ToggleRight size={22} strokeWidth={1.5} />
+            : <ToggleLeft  size={22} strokeWidth={1.5} />
+          }
+        </button>
+      </div>
+
+      {/* ── results ── */}
+      {enabled && (
+        <div
+          className="px-3.5 pb-3.5"
+          style={{ borderTop: `1px solid ${model.color}14` }}
+        >
+          {scores ? (
+            <>
+              <div className="pt-3">
+                {Object.entries(scores)
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 4)
+                  .map(([label, score]) => (
+                    <EmotionBar key={label} label={label} score={score} color={model.color} />
+                  ))}
+              </div>
+
+              {top && (
+                <div
+                  className="mt-2 px-3 py-2 rounded-lg flex items-center justify-between"
+                  style={{
+                    background: `${model.color}0a`,
+                    border: `1px solid ${model.color}18`,
+                  }}
+                >
+                  <span
+                    className="text-[9px] uppercase tracking-[0.16em]"
+                    style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.25)" }}
+                  >
+                    dominant
+                  </span>
+                  <span
+                    className="text-[11px] font-bold capitalize"
+                    style={{ fontFamily: "'Space Mono', monospace", color: model.color }}
+                  >
+                    {top[0]} · {fmt(top[1])}
+                  </span>
+                </div>
+              )}
+            </>
+          ) : (
+            <p
+              className="text-center py-3 text-[11px]"
+              style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.18)" }}
+            >
+              awaiting input…
+            </p>
           )}
         </div>
-      ) : enabled ? (
-        <p className="text-[11px] text-zinc-600 text-center py-3">
-          Awaiting input…
-        </p>
-      ) : (
-        <p className="text-[11px] text-zinc-700 text-center py-3">
-          Model disabled
-        </p>
+      )}
+
+      {!enabled && (
+        <div className="px-3.5 pb-3">
+          <p
+            className="text-[11px] text-center"
+            style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.14)" }}
+          >
+            disabled
+          </p>
+        </div>
       )}
     </div>
   );
