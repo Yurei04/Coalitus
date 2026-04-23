@@ -27,7 +27,7 @@ const INITIAL_MESSAGE = {
   id: 1,
   role: "assistant",
   content:
-    "Hello! I'm your emotion-aware assistant. The models on the right will analyze our conversation in real time — drag to reorder, toggle to enable.",
+    "Hello! I'm your coalitus. The models on the right will analyze our conversation in real time — drag to reorder, toggle to enable.",
   timestamp: new Date(),
 };
 

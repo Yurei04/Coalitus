@@ -175,7 +175,7 @@ export function LeftSidebar({
                   className="left-sidebar-mono text-[9px] tracking-[0.18em]"
                   style={{ color: "rgba(57,255,142,0.4)" }}
                 >
-                  EMOTION AI
+                  Well Being AI
                 </span>
               </div>
             )}

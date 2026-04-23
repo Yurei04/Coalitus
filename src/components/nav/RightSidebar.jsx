@@ -34,7 +34,7 @@ export function RightSidebar({
       <>
         {/* ── open sidebar ── */}
         <aside
-          className="relative flex flex-col shrink-0 transition-all duration-300 ease-in-out"
+          className="relative flex flex-col shrink-0 transition-all duration-300 ease-in-out h-full"
           style={{
             width:      open ? 280 : 0,
             minWidth:   open ? 280 : 0,
@@ -85,26 +85,10 @@ export function RightSidebar({
                 Models
               </span>
             </div>
-
-            {/* drag hint pill */}
-            <div
-              className="rs-scan relative overflow-hidden px-2.5 py-1 rounded-full"
-              style={{
-                background: "rgba(34,211,238,0.05)",
-                border: "1px solid rgba(34,211,238,0.14)",
-              }}
-            >
-              <span
-                className="rs-mono text-[9px] tracking-[0.12em] relative z-10"
-                style={{ color: "rgba(34,211,238,0.45)" }}
-              >
-                drag to reorder
-              </span>
-            </div>
           </div>
 
           {/* ── SCROLL CONTENT ── */}
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1 min-h-0">
             <div className="p-3 space-y-2 relative z-10">
               {orderedModels.map((model) => (
                 <ModelCard
