@@ -1,159 +1,57 @@
-# EmoChat 🌿
+# Coalitus Collective
 
-> An emotion-aware mental health chatbot that analyses every conversation in real time using 4 public NLP models and 4 custom-trained models — live on Hugging Face Spaces.
+> **Emotion AI Platform** — Real-time mental health NLP powered by an ensemble of 4 custom-trained models.
 
 ![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)
-![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
-![HF Spaces](https://img.shields.io/badge/Hugging%20Face-Spaces-orange?style=flat-square&logo=huggingface)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8?style=flat-square&logo=tailwind-css)
+![HuggingFace](https://img.shields.io/badge/HuggingFace-Spaces-fbbf24?style=flat-square&logo=huggingface)
+![License](https://img.shields.io/badge/License-MIT-39ff8e?style=flat-square)
 
 ---
 
-## What It Does
+## What It Is
 
-EmoChat is a mental health support chatbot that runs multiple NLP models simultaneously on every message. It detects emotion, routes to support topics, identifies cognitive distortions, and flags crisis content in real time — while giving counselors an instant pre-read before a session begins.
-
----
-
-## Features
-
-### 💬 Chat
-Conversational interface powered by a backend LLM. Every message sent and received is automatically run through all active emotion models in parallel.
-
-### 📊 Analysis
-Live breakdown of emotion scores across all active models with a consensus view. Models can be toggled on/off and reordered by drag-and-drop.
-
-### 🏥 Triage
-Counseling pre-read tool. Paste any client message and instantly get:
-- **Priority level** — Low → Critical, with auto-escalation for crisis content
-- **Emotion** — detected affect with confidence score
-- **Topic** — which mental health category the message falls under
-- **Distortions** — any CBT cognitive distortions present
-- **Counselor pre-read** — plain-English summary for the specialist
-- **Crisis resources** — 988 Lifeline and Crisis Text Line shown automatically when needed
-
-### 🤖 Our Models
-Showcase of all 4 custom-trained models with expandable cards showing architecture, output labels, use cases, JavaScript and Python code snippets, and links to each Hugging Face Space.
-
-### 🕐 History
-Full conversation log with timestamps.
+Coalitus Collective is a mental-health NLP platform that layers multiple fine-tuned language models over every conversation. Instead of a single sentiment score, you get a **living emotional profile** updated with each message — built with counselors, students, and researchers in mind.
 
 ---
 
 ## Models
 
-### Public Emotion Models (real-time sidebar)
+All 4 models are custom-trained and hosted on Hugging Face Spaces. No API key required.
 
-| Model | Labels | HF ID |
-|---|---|---|
-| DistilRoBERTa | 7-class | `j-hartmann/emotion-english-distilroberta-base` |
-| GoEmotions | 28-class | `SamLowe/roberta-base-go_emotions` |
-| DistilBERT | 6-class | `bhadresh-savani/distilbert-base-uncased-emotion` |
-| EmoClassify | 6-class | `michellejieli/emotion_text_classifier` |
-
-### Custom-Trained Models (API + Triage)
-
-| Model | Task | Labels | Space |
+| Model | Task | Classes | Architecture |
 |---|---|---|---|
-| 💬 Emotion Classifier | 6-class · single-label | sadness, anger, love, surprise, fear, joy | [emotionSpace](https://huggingface.co/spaces/YureiYuri/emotionSpace) |
-| 💙 Topic Router | 11-class · single-label | anxiety, depression, grief, trauma, relationship, family, self_esteem, sleep_issues, anger, suicide, general_support | [Empath](https://huggingface.co/spaces/YureiYuri/Empath) |
-| 🧠 Distortion Detector | 5-class · multi-label | overgeneralization, catastrophizing, black_and_white, self_blame, mind_reading | [Emphasist](https://huggingface.co/spaces/YureiYuri/Emphasist) |
-| 🎓 Stress Predictor | 3-class · single-label | low, medium, high | [stressUpSpace](https://huggingface.co/spaces/YureiYuri/stressUpSpace) |
-
-All 4 custom models are served through a single unified FastAPI + Gradio Space.
+| **Emotion Classifier** | Detects core emotion in text | 6-class | DistilBERT fine-tuned |
+| **Mental Health Topic Router** | Routes messages into support categories | 11-class | DistilBERT fine-tuned |
+| **CBT Distortion Detector** | Flags cognitive distortions from CBT | 5-class · multi-label | RoBERTa fine-tuned |
+| **Student Stress Predictor** | Predicts stress level from psychosocial inputs | 3-class | Tabular classifier |
 
 ---
 
-## Architecture
+## Features
 
-```
-┌─────────────────────────────────────────────────────┐
-│                   Next.js Frontend                  │
-│                                                     │
-│  LeftSidebar     MainContent        RightSidebar    │
-│  ───────────     ─────────────      ─────────────   │
-│  Usage ▾         Chat               Model Cards     │
-│   ├ Chat         Analysis           Consensus       │
-│   ├ Analysis     Triage             Toggle / Drag   │
-│   └ Triage       Our Models                         │
-│  Our Models      History                            │
-│  History         Settings                           │
-│  Settings                                           │
-└────────────────────────┬────────────────────────────┘
-                         │
-          ┌──────────────┴──────────────┐
-          │                             │
-   /api/chat (LLM)          HF Inference API
-   Next.js route            (4 public models, parallel)
-                                        
-                         Mental Health NLP API
-                         (HF Space · FastAPI · free)
-                         
-                         POST /analyze
-                           → emotion · topic
-                           → distortions · crisis flag
-                         
-                         POST /stress
-                           → stress level (low/med/high)
-                         
-                         GET /docs  (Swagger UI)
-```
+- **Chat interface** — Emotion-aware conversational AI powered by Claude
+- **Real-time analysis** — All 4 models run in parallel on every message
+- **Ensemble consensus** — Weighted aggregate score across enabled models
+- **Analysis view** — Per-model breakdown with confidence bars
+- **Triage tool** — Priority-level pre-read for counselors (emotion + topic + distortion + crisis flag)
+- **Models view** — Interactive docs with JS and Python code snippets
+- **History view** — Full conversation log
+- **Drag-to-reorder sidebar** — Customize which models run and in what order
 
 ---
 
-## Getting Started
+## Tech Stack
 
-### Prerequisites
-- Node.js 18+
-- An LLM API key (set in Settings or `.env.local`)
-
-### Install & Run
-
-```bash
-git clone https://github.com/YureiYuri/emochat
-cd emochat
-npm install
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-### Environment Variables
-
-```bash
-# .env.local
-NEXT_PUBLIC_API_SPACE_URL=https://yureiyuri-mental-health-nlp-api.hf.space
-```
-
----
-
-## API Usage
-
-All 4 custom models are available as a free, keyless REST API. CORS is fully open — call it from any app, website, or chatbot.
-
-### Analyze text — emotion + topic + distortions + crisis flag
-
-```js
-const res = await fetch("https://yureiyuri-mental-health-nlp-api.hf.space/analyze", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ text: "I can't stop worrying about everything." }),
-});
-const { emotion, topic, distortion, crisis } = await res.json();
-```
-
-### Predict student stress level
-
-```js
-const res = await fetch("https://yureiyuri-mental-health-nlp-api.hf.space/stress", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ anxiety_level: 15, self_esteem: 10, /* 20 fields total */ }),
-});
-const { label, confidence } = await res.json();
-// { label: "high", confidence: 0.86 }
-```
-
-Full interactive docs: [`/docs`](https://yureiyuri-mental-health-nlp-api.hf.space/docs)
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router) |
+| Styling | Tailwind CSS |
+| Icons | Lucide React |
+| UI Primitives | Radix UI (Tooltip, Switch, ScrollArea) |
+| AI Chat | Anthropic Claude via `/api/chat` |
+| NLP Models | HuggingFace Inference API |
+| Fonts | Syne (display) + Space Mono (mono) |
 
 ---
 
@@ -161,43 +59,115 @@ Full interactive docs: [`/docs`](https://yureiyuri-mental-health-nlp-api.hf.spac
 
 ```
 ├── app/
-│   ├── page.jsx                  # Main page — layout + all state
-│   └── api/chat/route.js         # LLM backend route
+│   ├── page.tsx                  # Root — renders EmotionChatPage
+│   └── api/chat/route.ts         # Claude chat API route
+│
 ├── components/
 │   ├── chatbot/
-│   │   ├── ChatView.jsx
-│   │   ├── AnalysisView.jsx
+│   │   ├── ChatMessage.jsx       # User / AI message bubbles
+│   │   ├── ChatInput.jsx         # Textarea + send button
+│   │   ├── ChatView.jsx          # Full chat panel
+│   │   ├── ModelCard.jsx         # Draggable model card with results
+│   │   ├── EmotionBar.jsx        # Score progress bar
+│   │   ├── AnalysisView.jsx      # Per-model analysis panel
 │   │   ├── TriageView.jsx        # Counseling triage tool
-│   │   ├── ModelsView.jsx        # Model showcase + code snippets
-│   │   ├── HistoryView.jsx
-│   │   └── SettingsView.jsx
-│   └── nav/
-│       ├── LeftSidebar.jsx       # Collapsible nav with Usage dropdown
-│       ├── RightSidebar.jsx      # Live model results + drag/drop
-│       └── TopBar.jsx
+│   │   ├── ModelsView.jsx        # Model docs + code snippets
+│   │   └── HistoryView.jsx       # Conversation history
+│   │
+│   ├── nav/
+│   │   ├── TopBar.jsx            # Active tab indicator + model status
+│   │   ├── LeftSidebar.jsx       # Nav tabs + active model strip
+│   │   └── RightSidebar.jsx      # Model cards + ensemble consensus
+│   │
+│   └── home/
+│       └── HomeView.jsx          # Landing page (full-screen)
+│
 └── lib/
-    ├── constants.js              # MODELS, MY_MODELS, NAV_ITEMS, API_SPACE_URL
-    └── helpers.js                # callHuggingFace, buildConsensus
+    ├── constants.ts              # MY_MODELS, MODELS, NAV_ITEMS, API_SPACE_URL
+    └── helpers.ts                # callHuggingFace, buildConsensus, fmt, topEmotion
 ```
 
 ---
 
-## Built For
+## Getting Started
 
-This project was built as a hackathon submission to demonstrate how multiple NLP models can be composed into a real-world mental health support interface. All models are open and free to use.
+### 1. Clone and install
+
+```bash
+git clone https://github.com/your-username/coalitus-collective.git
+cd coalitus-collective
+npm install
+```
+
+### 2. Set environment variables
+
+Create a `.env.local` file in the project root:
+
+```env
+ANTHROPIC_API_KEY=your_anthropic_key_here
+NEXT_PUBLIC_API_SPACE_URL=https://your-hf-space.hf.space
+```
+
+### 3. Run the dev server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## Disclaimer
+## API Usage
 
-EmoChat is an educational and research tool. It is **not** a substitute for professional mental health care. If you or someone you know is in crisis:
+The unified `/analyze` endpoint accepts any text and returns emotion, topic, and distortion analysis in one call.
 
-- **988 Suicide & Crisis Lifeline** — call or text **988** (US)  
-- **Crisis Text Line** — text HOME to **741741** (US / UK / CA / IE)  
-- **International** — [iasp.info/resources/Crisis_Centres](https://www.iasp.info/resources/Crisis_Centres/)
+**JavaScript**
+```js
+const res = await fetch(`${API_SPACE_URL}/analyze`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ text: "I feel so hopeless today.", distortion_threshold: 0.5 }),
+});
+const { emotion, topic, distortion } = await res.json();
+```
+
+**Python**
+```python
+import requests
+
+r = requests.post(f"{API_SPACE_URL}/analyze", json={
+    "text": "I feel so hopeless today.",
+    "distortion_threshold": 0.5,
+})
+print(r.json())
+```
+
+The stress model uses a dedicated `/stress` endpoint that accepts 20 psychosocial input fields (anxiety level, sleep quality, academic load, etc.) and returns `low`, `medium`, or `high`.
+
+---
+
+## Palette & Design System
+
+The UI follows a consistent dark design language shared across all views.
+
+| Token | Value | Usage |
+|---|---|---|
+| Background | `#00091d` | Page + sidebar base |
+| Dot grid | `#ffffff22` at `20px` | Texture overlay |
+| Emerald | `#39ff8e` | Primary accent, chat, emotion |
+| Cyan | `#22d3ee` | Analysis, right sidebar |
+| Lime | `#a3e635` | Triage, how-it-works |
+| Orange | `#fb923c` | Models, stress |
+| Display font | Syne 700/800 | Headings, buttons |
+| Mono font | Space Mono 400/700 | Labels, badges, code |
 
 ---
 
 ## License
 
-MIT
+MIT — free to use, modify, and distribute.
+
+---
+
+*Built with 🧠 for counselors, students, and researchers.*
