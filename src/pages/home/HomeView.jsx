@@ -12,7 +12,7 @@ import { MY_MODELS } from "@/lib/constants";
 /* ─────────────────────────────────────────────────────────── */
 /*  Constants                                                  */
 /* ─────────────────────────────────────────────────────────── */
-const EMOTIONS   = ["joy", "curiosity", "sadness", "anger", "surprise", "fear", "love", "hope"];
+const WELLBEING_STATES = ["calm", "clarity", "resilience", "balance", "mindfulness", "healing", "growth", "wellness"];
 const MODEL_ICONS = [Brain, HeartPulse, BookOpen, GraduationCap];
 const STEP_ICONS  = [MessageCircle, Zap, BarChart2, Compass];
 
@@ -57,22 +57,22 @@ function Counter({ target, suffix = "" }) {
 }
 
 /* ─────────────────────────────────────────────────────────── */
-/*  Emotion ticker                                             */
+/*  Well-being state ticker                                    */
 /* ─────────────────────────────────────────────────────────── */
-function EmotionTicker() {
+function WellBeingTicker() {
   const [idx, setIdx]     = useState(0);
   const [visible, setVis] = useState(true);
   useEffect(() => {
     const t = setInterval(() => {
       setVis(false);
-      setTimeout(() => { setIdx(i => (i + 1) % EMOTIONS.length); setVis(true); }, 250);
+      setTimeout(() => { setIdx(i => (i + 1) % WELLBEING_STATES.length); setVis(true); }, 250);
     }, 2000);
     return () => clearInterval(t);
   }, []);
   return (
-    <span className="inline-block min-w-[96px] font-mono font-bold transition-all duration-300"
+    <span className="inline-block min-w-[120px] font-mono font-bold transition-all duration-300"
       style={{ color:"#39ff8e", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(-8px)" }}>
-      {EMOTIONS[idx]}
+      {WELLBEING_STATES[idx]}
     </span>
   );
 }
@@ -370,7 +370,7 @@ export function HomeView({ onEnter }) {
             <div className="fade-up-1 inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-8"
               style={{ background:"rgba(57,255,142,0.07)", border:"1px solid rgba(57,255,142,0.18)" }}>
               <div className="breathe w-1.5 h-1.5 rounded-full bg-[#39ff8e]" />
-              <span className="mono-font text-[10px] text-[rgba(57,255,142,.8)] tracking-[0.15em]">EMOTION · MENTAL HEALTH · NLP</span>
+              <span className="mono-font text-[10px] text-[rgba(57,255,142,.8)] tracking-[0.15em]">WELL BEING · MENTAL HEALTH · NLP</span>
               <Sparkles size={11} className="text-[#39ff8e] opacity-70" />
             </div>
 
@@ -382,13 +382,13 @@ export function HomeView({ onEnter }) {
               </span>
               <br />
               <span style={{ background:"linear-gradient(135deg,#39ff8e,#22d3ee)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
-                every emotion.
+                your well being.
               </span>
             </h1>
 
             <p className="fade-up-3 text-[15px] text-white/40 leading-7 max-w-xl mb-3">
-              Detecting <EmotionTicker /> right now — Coalitus Collective layers multiple
-              fine-tuned NLP models over every conversation to surface real emotional intelligence.
+              Tracking <WellBeingTicker /> right now — Coalitus Collective layers multiple
+              fine-tuned NLP models over every conversation to surface real health intelligence.
             </p>
 
             {/* scan line */}
@@ -411,10 +411,10 @@ export function HomeView({ onEnter }) {
             <div className="fade-up-5 w-full max-w-2xl mt-16 pt-10 grid grid-cols-2 md:grid-cols-4 gap-8"
               style={{ borderTop:"1px solid rgba(255,255,255,0.05)" }}>
               {[
-                { val:"4",   suf:"",  label:"Custom models",   color:"#39ff8e", Icon:Layers   },
-                { val:"28",  suf:"",  label:"Emotion classes", color:"#22d3ee", Icon:Activity },
-                { val:"3.5", suf:"K", label:"Training convos", color:"#a3e635", Icon:Users    },
-                { val:"4",   suf:"",  label:"NLP ensembles",   color:"#fb923c", Icon:Target   },
+                { val:"4",   suf:"",  label:"Custom models",      color:"#39ff8e", Icon:Layers   },
+                { val:"28",  suf:"",  label:"Health indicators",  color:"#22d3ee", Icon:Activity },
+                { val:"3.5", suf:"K", label:"Training convos",    color:"#a3e635", Icon:Users    },
+                { val:"4",   suf:"",  label:"NLP ensembles",      color:"#fb923c", Icon:Target   },
               ].map(({ val, suf, label, color, Icon }) => (
                 <div key={label} className="flex flex-col items-center gap-1.5">
                   <Icon size={14} style={{ color, opacity:.6 }} />
@@ -434,12 +434,12 @@ export function HomeView({ onEnter }) {
             <div>
               <SectionLabel color="#39ff8e">ABOUT</SectionLabel>
               <AnimHeading gradient="linear-gradient(135deg,#ecfdf5,#bbf7d0)" size="clamp(24px,3.5vw,44px)">
-                Emotions are data.<br />Let's treat them that way.
+                Well Being are data.<br />Let's treat them that way.
               </AnimHeading>
               <p className="text-sm text-white/40 leading-7 mt-5 max-w-lg">
                 Coalitus Collective is a mental-health NLP platform that layers multiple fine-tuned
                 language models over every conversation. Instead of a single sentiment score, you get
-                a living emotional profile — updated with each message. Built with counselors,
+                a living health profile — updated with each message. Built with counselors,
                 students, and researchers in mind.
               </p>
             </div>
@@ -467,7 +467,7 @@ export function HomeView({ onEnter }) {
             <div className="md:sticky md:top-24">
               <SectionLabel color="#a3e635">HOW IT WORKS</SectionLabel>
               <AnimHeading gradient="linear-gradient(135deg,#ecfdf5,#d9f99d)" size="clamp(22px,3.5vw,42px)">
-                Real-time emotion<br />intelligence, layered.
+                Real-time health<br />intelligence, layered.
               </AnimHeading>
               <p className="text-sm text-white/35 leading-7 mt-5 max-w-sm">
                 Every message triggers a parallel inference pipeline across all models simultaneously —
@@ -476,10 +476,10 @@ export function HomeView({ onEnter }) {
             </div>
             <div className="flex flex-col">
               {[
-                { num:"01", color:"#39ff8e", title:"You send a message",        desc:"The chat routes your message simultaneously to the AI assistant and the emotion analysis pipeline." },
-                { num:"02", color:"#22d3ee", title:"Multi-model analysis fires", desc:"Up to 4 HuggingFace models run in parallel, each detecting different dimensions of emotion and topic." },
-                { num:"03", color:"#a3e635", title:"Ensemble consensus forms",   desc:"Results aggregate into a weighted consensus score — the sidebar shows individual reads and the combined signal." },
-                { num:"04", color:"#fb923c", title:"Triage routes the insight",  desc:"The Triage view classifies what kind of support is needed — anxiety, grief, CBT distortions, and more." },
+                { num:"01", color:"#39ff8e", title:"You send a message",          desc:"The chat routes your message simultaneously to the AI assistant and the well-being analysis pipeline." },
+                { num:"02", color:"#22d3ee", title:"Multi-model analysis fires",   desc:"Up to 4 HuggingFace models run in parallel, each detecting different dimensions of health and topic." },
+                { num:"03", color:"#a3e635", title:"Ensemble consensus forms",     desc:"Results aggregate into a weighted consensus score — the sidebar shows individual reads and the combined signal." },
+                { num:"04", color:"#fb923c", title:"Triage routes the insight",    desc:"The Triage view classifies what kind of support is needed — anxiety, grief, CBT distortions, and more." },
               ].map(({ num, color, title, desc }, i) => (
                 <div key={num} className="step-divider">
                   <StepRow num={num} color={color} title={title} desc={desc} Icon={STEP_ICONS[i]} index={i} />
@@ -498,7 +498,7 @@ export function HomeView({ onEnter }) {
               Ready to feel understood?
             </AnimHeading>
             <p className="text-sm text-white/35 mt-4 mb-9">
-              Start a conversation and watch the emotional intelligence unfold in real time.
+              Start a conversation and watch the health intelligence unfold in real time.
             </p>
             <button onClick={onEnter}
               className="btn-primary site-font text-[#020d05] text-[15px] font-extrabold px-14 py-4 rounded-2xl cursor-pointer border-none tracking-widest inline-flex items-center gap-2.5">
@@ -511,7 +511,7 @@ export function HomeView({ onEnter }) {
         <footer className="relative z-10 w-full" style={{ borderTop:"1px solid rgba(57,255,142,0.07)" }}>
           <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-5 flex items-center justify-between flex-wrap gap-3">
             <span className="mono-font text-[10px] text-white/20 tracking-widest">
-              COALITUS COLLECTIVE · EMOTION AI PLATFORM
+              COALITUS COLLECTIVE · WELL BEING AI PLATFORM
             </span>
             <div className="flex gap-2 flex-wrap">
               {MY_MODELS.map((m, i) => {

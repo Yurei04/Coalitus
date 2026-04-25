@@ -2,13 +2,18 @@
 
 import { useState } from "react";
 import { ChevronDown, ExternalLink, Brain, HeartPulse, BookOpen, GraduationCap, Copy, Check } from "lucide-react";
-import { MY_MODELS, API_SPACE_URL } from "@/lib/constants";
+import { MY_MODELS } from "@/lib/constants"; // API_SPACE_URL removed — use /api/triage & /api/chat
 
 const MODEL_ICONS = [Brain, HeartPulse, BookOpen, GraduationCap];
 
+// The platform's own API endpoints (server-side, no HF cold-starts for callers)
+const TRIAGE_URL  = "/api/triage";
+const CHAT_URL    = "/api/chat";
+
 /* ─── code snippets ─────────────────────────────────────── */
 const JS_SNIPPETS = {
-  emotion: `const res = await fetch(\`\${API_SPACE_URL}/analyze\`, {
+  emotion: `// POST ${TRIAGE_URL}  — returns emotion, topic, distortion + crisis flag
+const res = await fetch("${TRIAGE_URL}", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ text: "I feel so hopeless today." }),
@@ -16,7 +21,8 @@ const JS_SNIPPETS = {
 const { emotion } = await res.json();
 // { label: "sadness", confidence: 0.97 }`,
 
-  topic: `const res = await fetch(\`\${API_SPACE_URL}/analyze\`, {
+  topic: `// POST ${TRIAGE_URL}  — all three models run in one request
+const res = await fetch("${TRIAGE_URL}", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ text: "I can't sleep, I keep overthinking." }),
@@ -24,53 +30,59 @@ const { emotion } = await res.json();
 const { topic } = await res.json();
 // { label: "sleep_issues", confidence: 0.89 }`,
 
-  distortion: `const res = await fetch(\`\${API_SPACE_URL}/analyze\`, {
+  distortion: `// POST ${TRIAGE_URL}  — distortions flagged at ≥ 45% confidence
+const res = await fetch("${TRIAGE_URL}", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ text: "I always mess everything up.", distortion_threshold: 0.5 }),
+  body: JSON.stringify({ text: "I always mess everything up." }),
 });
 const { distortion } = await res.json();
-// { has_distortions: true, detected: [...] }`,
+// { has_distortions: true, detected: [{ label: "overgeneralization", confidence: 0.82 }] }`,
 
-  stress: `const res = await fetch(\`\${API_SPACE_URL}/stress\`, {
+  stress: `// POST ${CHAT_URL}  — stress model runs alongside chat, returned in analysis
+const res = await fetch("${CHAT_URL}", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ anxiety_level: 15, depression: 18, sleep_quality: 1, ... }),
+  body: JSON.stringify({ messages: [{ role: "user", content: "I feel overwhelmed." }] }),
 });
-const { label, confidence } = await res.json();
-// { label: "high", confidence: 0.86 }`,
+const { content, analysis } = await res.json();
+// analysis.stress → { high: 0.86 }
+// content         → Coalitus reply, already tone-adjusted for stress level`,
 };
 
 const PY_SNIPPETS = {
-  emotion: `import requests
-r = requests.post(f"{API_SPACE_URL}/analyze", json={
+  emotion: `# POST ${TRIAGE_URL}  — returns emotion, topic, distortion + crisis flag
+import requests
+r = requests.post("${TRIAGE_URL}", json={
     "text": "I feel so hopeless today."
 })
 print(r.json()["emotion"])
 # {"label": "sadness", "confidence": 0.97}`,
 
-  topic: `import requests
-r = requests.post(f"{API_SPACE_URL}/analyze", json={
+  topic: `# POST ${TRIAGE_URL}  — all three models in one request
+import requests
+r = requests.post("${TRIAGE_URL}", json={
     "text": "I can't sleep, I keep overthinking."
 })
 print(r.json()["topic"])
 # {"label": "sleep_issues", "confidence": 0.89}`,
 
-  distortion: `import requests
-r = requests.post(f"{API_SPACE_URL}/analyze", json={
-    "text": "I always mess everything up.",
-    "distortion_threshold": 0.5,
+  distortion: `# POST ${TRIAGE_URL}  — distortions flagged at >= 45% confidence
+import requests
+r = requests.post("${TRIAGE_URL}", json={
+    "text": "I always mess everything up."
 })
 print(r.json()["distortion"])
-# {"has_distortions": True, "detected": [...]}`,
+# {"has_distortions": True, "detected": [{"label": "overgeneralization", "confidence": 0.82}]}`,
 
-  stress: `import requests
-r = requests.post(f"{API_SPACE_URL}/stress", json={
-    "anxiety_level": 15, "depression": 18, "sleep_quality": 1,
-    # ... other fields
+  stress: `# POST ${CHAT_URL}  — stress model runs alongside chat, returned in analysis
+import requests
+r = requests.post("${CHAT_URL}", json={
+    "messages": [{"role": "user", "content": "I feel overwhelmed."}]
 })
-print(r.json())
-# {"label": "high", "confidence": 0.86}`,
+data = r.json()
+print(data["analysis"]["stress"])   # {"high": 0.86}
+print(data["content"])              # Coalitus reply, tone-adjusted for stress`,
 };
 
 /* ─── CodeBlock ─────────────────────────────────────────── */
@@ -149,10 +161,7 @@ export function ModelsView() {
     <>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap');`}</style>
 
-      <div
-        className="flex-1 overflow-y-auto p-6"
-        style={{ background: "rgba(0,9,29,0.98)" }}
-      >
+      <div className="flex-1 overflow-y-auto p-6" style={{ background: "rgba(0,9,29,0.98)" }}>
         <div className="max-w-2xl mx-auto space-y-4">
 
           {/* heading */}
@@ -192,99 +201,64 @@ export function ModelsView() {
                   boxShadow: isOpen ? `0 0 24px ${m.color}10` : "none",
                 }}
               >
-                {/* header — always visible */}
+                {/* header */}
                 <button
                   className="w-full flex items-center gap-3 px-5 py-4 text-left transition-colors duration-150"
                   style={{ cursor: "pointer", background: "transparent", border: "none" }}
                   onClick={() => setExpanded(isOpen ? null : m.id)}
                 >
-                  {/* icon */}
                   <div
                     className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                    style={{
-                      background: `${m.color}12`,
-                      border: `1px solid ${m.color}28`,
-                    }}
+                    style={{ background: `${m.color}12`, border: `1px solid ${m.color}28` }}
                   >
                     <Icon size={17} style={{ color: m.color }} strokeWidth={1.7} />
                   </div>
 
-                  {/* name + arch */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span
-                        className="text-sm font-bold"
-                        style={{ fontFamily: "'Syne', sans-serif", color: "rgba(255,255,255,0.82)" }}
-                      >
+                      <span className="text-sm font-bold"
+                        style={{ fontFamily: "'Syne', sans-serif", color: "rgba(255,255,255,0.82)" }}>
                         {m.name}
                       </span>
-                      <span
-                        className="text-[9px] px-2 py-0.5 rounded-full tracking-widest"
-                        style={{
-                          fontFamily: "'Space Mono', monospace",
-                          background: `${m.color}12`,
-                          border: `1px solid ${m.color}25`,
-                          color: m.color,
-                        }}
-                      >
+                      <span className="text-[9px] px-2 py-0.5 rounded-full tracking-widest"
+                        style={{ fontFamily: "'Space Mono', monospace", background: `${m.color}12`, border: `1px solid ${m.color}25`, color: m.color }}>
                         {m.badge}
                       </span>
                     </div>
-                    <p
-                      className="text-[11px] mt-0.5 truncate"
-                      style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.22)" }}
-                    >
+                    <p className="text-[11px] mt-0.5 truncate"
+                      style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.22)" }}>
                       {m.architecture}
                     </p>
                   </div>
 
-                  <ChevronDown
-                    size={15}
-                    strokeWidth={2}
-                    style={{
-                      color: isOpen ? m.color : "rgba(255,255,255,0.2)",
-                      transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-                      transition: "transform 0.2s, color 0.2s",
-                      flexShrink: 0,
-                    }}
-                  />
+                  <ChevronDown size={15} strokeWidth={2} style={{
+                    color: isOpen ? m.color : "rgba(255,255,255,0.2)",
+                    transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 0.2s, color 0.2s",
+                    flexShrink: 0,
+                  }} />
                 </button>
 
                 {/* expanded body */}
                 {isOpen && (
-                  <div
-                    className="px-5 pb-5 space-y-4"
+                  <div className="px-5 pb-5 space-y-4"
                     style={{ borderTop: `1px solid ${m.color}15` }}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {/* description */}
-                    <p
-                      className="text-sm leading-relaxed pt-4"
-                      style={{ color: "rgba(255,255,255,0.42)" }}
-                    >
+                    <p className="text-sm leading-relaxed pt-4" style={{ color: "rgba(255,255,255,0.42)" }}>
                       {m.description}
                     </p>
 
                     {/* labels */}
                     <div>
-                      <p
-                        className="text-[10px] uppercase tracking-[0.18em] mb-2"
-                        style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.22)" }}
-                      >
+                      <p className="text-[10px] uppercase tracking-[0.18em] mb-2"
+                        style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.22)" }}>
                         Output Labels
                       </p>
                       <div className="flex flex-wrap gap-1.5">
                         {m.labels.map((label) => (
-                          <span
-                            key={label}
-                            className="text-[11px] px-2.5 py-0.5 rounded-lg"
-                            style={{
-                              fontFamily: "'Space Mono', monospace",
-                              background: `${m.color}0a`,
-                              border: `1px solid ${m.color}20`,
-                              color: m.color,
-                            }}
-                          >
+                          <span key={label} className="text-[11px] px-2.5 py-0.5 rounded-lg"
+                            style={{ fontFamily: "'Space Mono', monospace", background: `${m.color}0a`, border: `1px solid ${m.color}20`, color: m.color }}>
                             {label.replace(/_/g, " ")}
                           </span>
                         ))}
@@ -294,36 +268,25 @@ export function ModelsView() {
                     {/* use case */}
                     {m.useCase && (
                       <div>
-                        <p
-                          className="text-[10px] uppercase tracking-[0.18em] mb-1"
-                          style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.22)" }}
-                        >
+                        <p className="text-[10px] uppercase tracking-[0.18em] mb-1"
+                          style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.22)" }}>
                           Use Cases
                         </p>
-                        <p className="text-xs" style={{ color: "rgba(255,255,255,0.32)" }}>
-                          {m.useCase}
-                        </p>
+                        <p className="text-xs" style={{ color: "rgba(255,255,255,0.32)" }}>{m.useCase}</p>
                       </div>
                     )}
 
                     {/* code */}
                     <div>
                       <div className="flex items-center justify-between mb-1">
-                        <p
-                          className="text-[10px] uppercase tracking-[0.18em]"
-                          style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.22)" }}
-                        >
+                        <p className="text-[10px] uppercase tracking-[0.18em]"
+                          style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.22)" }}>
                           How to Use
                         </p>
-                        {/* lang tabs */}
-                        <div
-                          className="flex rounded-lg overflow-hidden"
-                          style={{ border: "1px solid rgba(255,255,255,0.08)" }}
-                        >
+                        <div className="flex rounded-lg overflow-hidden"
+                          style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
                           {["js", "python"].map((lang) => (
-                            <button
-                              key={lang}
-                              onClick={() => setTab(m.id, lang)}
+                            <button key={lang} onClick={() => setTab(m.id, lang)}
                               className="text-[10px] px-3 py-1 transition-colors duration-150"
                               style={{
                                 fontFamily: "'Space Mono', monospace",
@@ -331,8 +294,7 @@ export function ModelsView() {
                                 color: tab === lang ? m.color : "rgba(255,255,255,0.22)",
                                 borderRight: lang === "js" ? "1px solid rgba(255,255,255,0.08)" : "none",
                                 cursor: "pointer",
-                              }}
-                            >
+                              }}>
                               {lang === "js" ? "JS" : "Python"}
                             </button>
                           ))}
@@ -345,27 +307,11 @@ export function ModelsView() {
                     </div>
 
                     {/* HF link */}
-                    <a
-                      href={m.hfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <a href={m.hfUrl} target="_blank" rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 text-xs px-4 py-2 rounded-xl transition-all duration-150"
-                      style={{
-                        fontFamily: "'Space Mono', monospace",
-                        background: `${m.color}0f`,
-                        color: m.color,
-                        border: `1px solid ${m.color}30`,
-                        textDecoration: "none",
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.background = `${m.color}1e`;
-                        e.currentTarget.style.boxShadow  = `0 0 14px ${m.color}20`;
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.background = `${m.color}0f`;
-                        e.currentTarget.style.boxShadow  = "none";
-                      }}
-                    >
+                      style={{ fontFamily: "'Space Mono', monospace", background: `${m.color}0f`, color: m.color, border: `1px solid ${m.color}30`, textDecoration: "none" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = `${m.color}1e`; e.currentTarget.style.boxShadow = `0 0 14px ${m.color}20`; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = `${m.color}0f`; e.currentTarget.style.boxShadow = "none"; }}>
                       <ExternalLink size={12} strokeWidth={1.8} />
                       View on Hugging Face
                     </a>
@@ -375,11 +321,8 @@ export function ModelsView() {
             );
           })}
 
-          {/* footer note */}
-          <p
-            className="text-center text-[10px] pt-2"
-            style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.12)" }}
-          >
+          <p className="text-center text-[10px] pt-2"
+            style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.12)" }}>
             All models are free and open · Hosted on Hugging Face Spaces · No API key needed
           </p>
         </div>

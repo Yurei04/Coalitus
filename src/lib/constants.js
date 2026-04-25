@@ -1,101 +1,105 @@
-// 👉 Replace with your actual HF API Space name once deployed
-export const API_SPACE_URL = "https://yureiyuri-mental-health-nlp-api.hf.space";
+/**
+ * lib/constants.js
+ */
 
 export const MODELS = [
   {
-    id: "hartmann",
-    name: "DistilRoBERTa",
-    hfId: "j-hartmann/emotion-english-distilroberta-base",
-    color: "#4ade80",
-    glow: "#4ade8040",
-    badge: "7-class",
-    desc: "anger · disgust · fear · joy · neutral · sadness · surprise",
-  },
-  {
-    id: "samlowe",
-    name: "GoEmotions",
-    hfId: "SamLowe/roberta-base-go_emotions",
-    color: "#38bdf8",
-    glow: "#38bdf840",
-    badge: "28-class",
-    desc: "Fine-grained taxonomy from Google research",
-  },
-  {
-    id: "bhadresh",
-    name: "DistilBERT",
-    hfId: "bhadresh-savani/distilbert-base-uncased-emotion",
-    color: "#e879f9",
-    glow: "#e879f940",
-    badge: "6-class",
-    desc: "sadness · joy · love · anger · fear · surprise",
-  },
-  {
-    id: "michelle",
-    name: "EmoClassify",
-    hfId: "michellejieli/emotion_text_classifier",
-    color: "#fb923c",
-    glow: "#fb923c40",
-    badge: "6-class",
-    desc: "Sentiment-aware 6-label emotion classifier",
-  },
-];
-
-export const MY_MODELS = [
-  {
     id: "emotion",
     name: "Emotion Classifier",
-    emoji: "💬",
-    color: "#4ade80",
-    glow: "#4ade8040",
     badge: "6-class",
-    architecture: "DistilBERT fine-tuned",
-    labels: ["sadness", "anger", "love", "surprise", "fear", "joy"],
-    description:
-      "Classifies text into 6 core emotions. Fine-tuned on DistilBERT using a labelled emotion dataset. Powers real-time emotion detection on every message in this chatbot.",
-    useCase: "Emotion detection · sentiment routing · chatbot tone awareness",
+    color: "#39ff8e",
+    glow: "rgba(57,255,142,0.15)",
+    spaceUrl: process.env.NEXT_PUBLIC_EMOTION_SPACE_URL || "",
     hfUrl: "https://huggingface.co/spaces/YureiYuri/emotionSpace",
+    labels: ["sadness", "anger", "love", "surprise", "joy", "fear"],
   },
   {
     id: "topic",
-    name: "Mental Health Topic Router",
-    emoji: "💙",
-    color: "#38bdf8",
-    glow: "#38bdf840",
+    name: "Empathy",
     badge: "11-class",
-    architecture: "DistilBERT fine-tuned",
-    labels: ["anxiety", "depression", "grief", "trauma", "relationship", "family", "self_esteem", "sleep_issues", "anger", "suicide", "general_support"],
-    description:
-      "Routes mental health messages into 11 topic categories. Trained on 3,508 real counselling conversations. Powers the Triage tool to identify what kind of support a user needs.",
-    useCase: "Counseling triage · support forum routing · chatbot specialization",
+    color: "#22d3ee",
+    glow: "rgba(34,211,238,0.15)",
+    spaceUrl: process.env.NEXT_PUBLIC_TOPIC_SPACE_URL || "",
     hfUrl: "https://huggingface.co/spaces/YureiYuri/Empath",
+    labels: [
+      "anxiety",
+      "depression",
+      "grief",
+      "trauma",
+      "relationship",
+      "family",
+      "anger",
+      "self_esteem",
+      "sleep_issues",
+      "general_support",
+      "suicide",
+    ],
   },
   {
     id: "distortion",
-    name: "CBT Distortion Detector",
-    emoji: "🧠",
-    color: "#e879f9",
-    glow: "#e879f940",
-    badge: "5-class · multi-label",
-    architecture: "DistilBERT (YureiYuri/empathist)",
-    labels: ["overgeneralization", "catastrophizing", "black_and_white", "self_blame", "mind_reading"],
-    description:
-      "Multi-label classifier that detects cognitive distortions from Cognitive Behavioral Therapy (CBT). Helps counselors spot unhealthy thinking patterns before a session begins.",
-    useCase: "CBT journaling · therapist pre-reads · distortion awareness tools",
+    name: "Emphasist",
+    badge: "multi-label",
+    color: "#a3e635",
+    glow: "rgba(163,230,53,0.15)",
+    spaceUrl: process.env.NEXT_PUBLIC_DISTORTION_SPACE_URL || "",
     hfUrl: "https://huggingface.co/spaces/YureiYuri/Emphasist",
+    labels: [
+      "overgeneralization",
+      "catastrophizing",
+      "black_and_white",
+      "self_blame",
+      "mind_reading",
+    ],
   },
   {
     id: "stress",
-    name: "Student Stress Predictor",
-    emoji: "🎓",
-    color: "#fb923c",
-    glow: "#fb923c40",
+    name: "Stress Predictor",
     badge: "3-class",
-    architecture: "PyTorch Feedforward NN (256→128→64)",
-    labels: ["low", "medium", "high"],
-    description:
-      "Predicts student stress level from 20 psychosocial inputs including sleep quality, peer pressure, academic load, and anxiety. Trained on student wellness survey data.",
-    useCase: "School counseling · student wellness dashboards · early intervention",
+    color: "#fb923c",
+    glow: "rgba(251,146,60,0.15)",
+    spaceUrl: process.env.NEXT_PUBLIC_STRESS_SPACE_URL || "",
     hfUrl: "https://huggingface.co/spaces/YureiYuri/stressUpSpace",
+    labels: ["low", "medium", "high"],
+  },
+];
+
+// MY_MODELS = same list with extra display metadata
+export const MY_MODELS = [
+  {
+    ...MODELS[0],
+    emoji: "🎭",
+    architecture: "DistilBERT fine-tuned",
+    description:
+      "Classifies text into 6 core emotions. Fine-tuned on a labelled emotion dataset. Powers real-time emotion detection on every chat message.",
+    useCase:
+      "Real-time emotion tracking across every conversation turn.",
+  },
+  {
+    ...MODELS[1],
+    emoji: "💙",
+    architecture: "DistilBERT fine-tuned",
+    description:
+      "Routes mental health messages into 11 topic categories. Trained on 3,508 real counselling conversations. Powers the Triage tool.",
+    useCase:
+      "Triage routing, counselor pre-reads, session topic tracking.",
+  },
+  {
+    ...MODELS[2],
+    emoji: "🧠",
+    architecture: "RoBERTa fine-tuned",
+    description:
+      "Multi-label classifier that detects cognitive distortions from CBT. Helps counselors spot unhealthy thinking patterns before a session begins.",
+    useCase:
+      "Pre-session distortion screening, CBT session planning.",
+  },
+  {
+    ...MODELS[3],
+    emoji: "📚",
+    architecture: "Tabular classifier",
+    description:
+      "Predicts student stress level from 20 psychosocial inputs including sleep quality, peer pressure, and academic load.",
+    useCase:
+      "Student wellness screening, academic stress monitoring.",
   },
 ];
 
