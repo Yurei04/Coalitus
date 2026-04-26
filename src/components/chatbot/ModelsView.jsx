@@ -2,15 +2,13 @@
 
 import { useState } from "react";
 import { ChevronDown, ExternalLink, Brain, HeartPulse, BookOpen, GraduationCap, Copy, Check } from "lucide-react";
-import { MY_MODELS } from "@/lib/constants"; // API_SPACE_URL removed — use /api/triage & /api/chat
+import { MY_MODELS } from "@/lib/constants";
 
 const MODEL_ICONS = [Brain, HeartPulse, BookOpen, GraduationCap];
 
-// The platform's own API endpoints (server-side, no HF cold-starts for callers)
-const TRIAGE_URL  = "/api/triage";
-const CHAT_URL    = "/api/chat";
+const TRIAGE_URL = "/api/triage";
+const CHAT_URL   = "/api/chat";
 
-/* ─── code snippets ─────────────────────────────────────── */
 const JS_SNIPPETS = {
   emotion: `// POST ${TRIAGE_URL}  — returns emotion, topic, distortion + crisis flag
 const res = await fetch("${TRIAGE_URL}", {
@@ -30,7 +28,7 @@ const res = await fetch("${TRIAGE_URL}", {
 const { topic } = await res.json();
 // { label: "sleep_issues", confidence: 0.89 }`,
 
-  distortion: `// POST ${TRIAGE_URL}  — distortions flagged at ≥ 45% confidence
+  distortion: `// POST ${TRIAGE_URL}  — distortions flagged at >= 45% confidence
 const res = await fetch("${TRIAGE_URL}", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
@@ -51,41 +49,32 @@ const { content, analysis } = await res.json();
 };
 
 const PY_SNIPPETS = {
-  emotion: `# POST ${TRIAGE_URL}  — returns emotion, topic, distortion + crisis flag
+  emotion: `# POST ${TRIAGE_URL}
 import requests
-r = requests.post("${TRIAGE_URL}", json={
-    "text": "I feel so hopeless today."
-})
+r = requests.post("${TRIAGE_URL}", json={"text": "I feel so hopeless today."})
 print(r.json()["emotion"])
 # {"label": "sadness", "confidence": 0.97}`,
 
-  topic: `# POST ${TRIAGE_URL}  — all three models in one request
+  topic: `# POST ${TRIAGE_URL}
 import requests
-r = requests.post("${TRIAGE_URL}", json={
-    "text": "I can't sleep, I keep overthinking."
-})
+r = requests.post("${TRIAGE_URL}", json={"text": "I can't sleep, I keep overthinking."})
 print(r.json()["topic"])
 # {"label": "sleep_issues", "confidence": 0.89}`,
 
-  distortion: `# POST ${TRIAGE_URL}  — distortions flagged at >= 45% confidence
+  distortion: `# POST ${TRIAGE_URL}
 import requests
-r = requests.post("${TRIAGE_URL}", json={
-    "text": "I always mess everything up."
-})
+r = requests.post("${TRIAGE_URL}", json={"text": "I always mess everything up."})
 print(r.json()["distortion"])
 # {"has_distortions": True, "detected": [{"label": "overgeneralization", "confidence": 0.82}]}`,
 
-  stress: `# POST ${CHAT_URL}  — stress model runs alongside chat, returned in analysis
+  stress: `# POST ${CHAT_URL}
 import requests
-r = requests.post("${CHAT_URL}", json={
-    "messages": [{"role": "user", "content": "I feel overwhelmed."}]
-})
+r = requests.post("${CHAT_URL}", json={"messages": [{"role": "user", "content": "I feel overwhelmed."}]})
 data = r.json()
 print(data["analysis"]["stress"])   # {"high": 0.86}
-print(data["content"])              # Coalitus reply, tone-adjusted for stress`,
+print(data["content"])              # Coalitus reply`,
 };
 
-/* ─── CodeBlock ─────────────────────────────────────────── */
 function CodeBlock({ code, color }) {
   const [copied, setCopied] = useState(false);
 
@@ -97,25 +86,12 @@ function CodeBlock({ code, color }) {
 
   return (
     <div className="relative mt-3">
-      <pre
-        className="rounded-xl px-4 py-3.5 text-[11.5px] leading-[1.8] overflow-x-auto"
-        style={{
-          background: "rgba(0,0,0,0.4)",
-          border: "1px solid rgba(255,255,255,0.06)",
-          color: "rgba(255,255,255,0.4)",
-          fontFamily: "'Space Mono', monospace",
-          margin: 0,
-          whiteSpace: "pre",
-        }}
-      >
+      <pre className="rounded-xl px-4 py-3.5 text-[11.5px] leading-[1.8] overflow-x-auto"
+        style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)", fontFamily: "'Space Mono', monospace", margin: 0, whiteSpace: "pre" }}>
         {code.split("\n").map((line, i) => {
           const isComment = line.trim().startsWith("//") || line.trim().startsWith("#");
           if (isComment) {
-            return (
-              <span key={i} style={{ display: "block", color: "rgba(57,255,142,0.38)" }}>
-                {line}
-              </span>
-            );
+            return <span key={i} style={{ display: "block", color: "rgba(57,255,142,0.38)" }}>{line}</span>;
           }
           const parts = line.split(/("[^"]*"|'[^']*')/g);
           return (
@@ -129,19 +105,9 @@ function CodeBlock({ code, color }) {
           );
         })}
       </pre>
-
-      <button
-        onClick={(e) => { e.stopPropagation(); copy(); }}
+      <button onClick={(e) => { e.stopPropagation(); copy(); }}
         className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all duration-150"
-        style={{
-          background: copied ? `${color}18` : "rgba(255,255,255,0.04)",
-          border: `1px solid ${copied ? color + "35" : "rgba(255,255,255,0.07)"}`,
-          color: copied ? color : "rgba(255,255,255,0.25)",
-          fontFamily: "'Space Mono', monospace",
-          fontSize: 10,
-          cursor: "pointer",
-        }}
-      >
+        style={{ background: copied ? `${color}18` : "rgba(255,255,255,0.04)", border: `1px solid ${copied ? color + "35" : "rgba(255,255,255,0.07)"}`, color: copied ? color : "rgba(255,255,255,0.25)", fontFamily: "'Space Mono', monospace", fontSize: 10, cursor: "pointer" }}>
         {copied ? <Check size={10} /> : <Copy size={10} />}
         {copied ? "Copied" : "Copy"}
       </button>
@@ -149,10 +115,9 @@ function CodeBlock({ code, color }) {
   );
 }
 
-/* ─── ModelsView ─────────────────────────────────────────── */
 export function ModelsView() {
   const [expanded, setExpanded] = useState(null);
-  const [tabs, setTabs]         = useState({});
+  const [tabs,     setTabs]     = useState({});
 
   const getTab = (id) => tabs[id] ?? "js";
   const setTab = (id, t) => setTabs((p) => ({ ...p, [id]: t }));
@@ -164,56 +129,33 @@ export function ModelsView() {
       <div className="flex-1 overflow-y-auto p-6" style={{ background: "rgba(0,9,29,0.98)" }}>
         <div className="max-w-2xl mx-auto space-y-4">
 
-          {/* heading */}
           <div className="mb-6">
-            <h2
-              className="text-xl font-extrabold mb-1"
-              style={{
-                fontFamily: "'Syne', sans-serif",
-                background: "linear-gradient(135deg,#d1fae5,#86efac)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
+            <h2 className="text-xl font-extrabold mb-1"
+              style={{ fontFamily: "'Syne', sans-serif", background: "linear-gradient(135deg,#d1fae5,#86efac)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
               Our Models
             </h2>
-            <p
-              className="text-sm"
-              style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.25)" }}
-            >
+            <p className="text-sm"
+              style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.25)" }}>
               4 custom NLP models — click any card to see details & code snippets.
             </p>
           </div>
 
-          {/* cards */}
           {MY_MODELS.map((m, index) => {
             const isOpen = expanded === m.id;
             const tab    = getTab(m.id);
             const Icon   = MODEL_ICONS[index % MODEL_ICONS.length];
 
             return (
-              <div
-                key={m.id}
-                className="rounded-xl overflow-hidden transition-all duration-200"
-                style={{
-                  background: isOpen ? `${m.color}06` : "rgba(255,255,255,0.025)",
-                  border: `1px solid ${isOpen ? m.color + "35" : "rgba(255,255,255,0.07)"}`,
-                  boxShadow: isOpen ? `0 0 24px ${m.color}10` : "none",
-                }}
-              >
-                {/* header */}
-                <button
-                  className="w-full flex items-center gap-3 px-5 py-4 text-left transition-colors duration-150"
+              <div key={m.id} className="rounded-xl overflow-hidden transition-all duration-200"
+                style={{ background: isOpen ? `${m.color}06` : "rgba(255,255,255,0.025)", border: `1px solid ${isOpen ? m.color + "35" : "rgba(255,255,255,0.07)"}`, boxShadow: isOpen ? `0 0 24px ${m.color}10` : "none" }}>
+
+                <button className="w-full flex items-center gap-3 px-5 py-4 text-left transition-colors duration-150"
                   style={{ cursor: "pointer", background: "transparent", border: "none" }}
-                  onClick={() => setExpanded(isOpen ? null : m.id)}
-                >
-                  <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: `${m.color}12`, border: `1px solid ${m.color}28` }}
-                  >
+                  onClick={() => setExpanded(isOpen ? null : m.id)}>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: `${m.color}12`, border: `1px solid ${m.color}28` }}>
                     <Icon size={17} style={{ color: m.color }} strokeWidth={1.7} />
                   </div>
-
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-bold"
@@ -230,26 +172,17 @@ export function ModelsView() {
                       {m.architecture}
                     </p>
                   </div>
-
-                  <ChevronDown size={15} strokeWidth={2} style={{
-                    color: isOpen ? m.color : "rgba(255,255,255,0.2)",
-                    transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-                    transition: "transform 0.2s, color 0.2s",
-                    flexShrink: 0,
-                  }} />
+                  <ChevronDown size={15} strokeWidth={2}
+                    style={{ color: isOpen ? m.color : "rgba(255,255,255,0.2)", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s, color 0.2s", flexShrink: 0 }} />
                 </button>
 
-                {/* expanded body */}
                 {isOpen && (
                   <div className="px-5 pb-5 space-y-4"
                     style={{ borderTop: `1px solid ${m.color}15` }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                    onClick={(e) => e.stopPropagation()}>
                     <p className="text-sm leading-relaxed pt-4" style={{ color: "rgba(255,255,255,0.42)" }}>
                       {m.description}
                     </p>
-
-                    {/* labels */}
                     <div>
                       <p className="text-[10px] uppercase tracking-[0.18em] mb-2"
                         style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.22)" }}>
@@ -264,8 +197,6 @@ export function ModelsView() {
                         ))}
                       </div>
                     </div>
-
-                    {/* use case */}
                     {m.useCase && (
                       <div>
                         <p className="text-[10px] uppercase tracking-[0.18em] mb-1"
@@ -275,8 +206,6 @@ export function ModelsView() {
                         <p className="text-xs" style={{ color: "rgba(255,255,255,0.32)" }}>{m.useCase}</p>
                       </div>
                     )}
-
-                    {/* code */}
                     <div>
                       <div className="flex items-center justify-between mb-1">
                         <p className="text-[10px] uppercase tracking-[0.18em]"
@@ -288,30 +217,19 @@ export function ModelsView() {
                           {["js", "python"].map((lang) => (
                             <button key={lang} onClick={() => setTab(m.id, lang)}
                               className="text-[10px] px-3 py-1 transition-colors duration-150"
-                              style={{
-                                fontFamily: "'Space Mono', monospace",
-                                background: tab === lang ? `${m.color}18` : "transparent",
-                                color: tab === lang ? m.color : "rgba(255,255,255,0.22)",
-                                borderRight: lang === "js" ? "1px solid rgba(255,255,255,0.08)" : "none",
-                                cursor: "pointer",
-                              }}>
+                              style={{ fontFamily: "'Space Mono', monospace", background: tab === lang ? `${m.color}18` : "transparent", color: tab === lang ? m.color : "rgba(255,255,255,0.22)", borderRight: lang === "js" ? "1px solid rgba(255,255,255,0.08)" : "none", cursor: "pointer" }}>
                               {lang === "js" ? "JS" : "Python"}
                             </button>
                           ))}
                         </div>
                       </div>
-                      <CodeBlock
-                        code={tab === "js" ? JS_SNIPPETS[m.id] : PY_SNIPPETS[m.id]}
-                        color={m.color}
-                      />
+                      <CodeBlock code={tab === "js" ? JS_SNIPPETS[m.id] : PY_SNIPPETS[m.id]} color={m.color} />
                     </div>
-
-                    {/* HF link */}
                     <a href={m.hfUrl} target="_blank" rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 text-xs px-4 py-2 rounded-xl transition-all duration-150"
                       style={{ fontFamily: "'Space Mono', monospace", background: `${m.color}0f`, color: m.color, border: `1px solid ${m.color}30`, textDecoration: "none" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = `${m.color}1e`; e.currentTarget.style.boxShadow = `0 0 14px ${m.color}20`; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = `${m.color}0f`; e.currentTarget.style.boxShadow = "none"; }}>
+                      onMouseEnter={(e) => { e.currentTarget.style.background = `${m.color}1e`; e.currentTarget.style.boxShadow = `0 0 14px ${m.color}20`; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = `${m.color}0f`; e.currentTarget.style.boxShadow = "none"; }}>
                       <ExternalLink size={12} strokeWidth={1.8} />
                       View on Hugging Face
                     </a>

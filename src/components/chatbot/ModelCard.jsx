@@ -88,58 +88,6 @@ export function ModelCard({
           }
         </button>
       </div>
-
-      {/* ── results ── */}
-      {enabled && (
-        <div
-          className="px-3.5 pb-3.5"
-          style={{ borderTop: `1px solid ${model.color}14` }}
-        >
-          {scores ? (
-            <>
-              <div className="pt-3">
-                {Object.entries(scores)
-                  .sort((a, b) => b[1] - a[1])
-                  .slice(0, 4)
-                  .map(([label, score]) => (
-                    <EmotionBar key={label} label={label} score={score} color={model.color} />
-                  ))}
-              </div>
-
-              {top && (
-                <div
-                  className="mt-2 px-3 py-2 rounded-lg flex items-center justify-between"
-                  style={{
-                    background: `${model.color}0a`,
-                    border: `1px solid ${model.color}18`,
-                  }}
-                >
-                  <span
-                    className="text-[9px] uppercase tracking-[0.16em]"
-                    style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.25)" }}
-                  >
-                    dominant
-                  </span>
-                  <span
-                    className="text-[11px] font-bold capitalize"
-                    style={{ fontFamily: "'Space Mono', monospace", color: model.color }}
-                  >
-                    {top[0]} · {fmt(top[1])}
-                  </span>
-                </div>
-              )}
-            </>
-          ) : (
-            <p
-              className="text-center py-3 text-[11px]"
-              style={{ fontFamily: "'Space Mono', monospace", color: "rgba(255,255,255,0.18)" }}
-            >
-              awaiting input…
-            </p>
-          )}
-        </div>
-      )}
-
       {!enabled && (
         <div className="px-3.5 pb-3">
           <p
