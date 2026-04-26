@@ -1,5 +1,4 @@
 import EmotionChatPage from "@/pages/chabot/EmotionChatPage";
-import { HomeView } from "@/pages/home/HomeView";
 
 export default function Home() {
   return (

@@ -5,7 +5,7 @@ import { ChatView }     from "@/components/chatbot/ChatView";
 import { HistoryView }  from "@/components/chatbot/HistoryView";
 import { TriageView }   from "@/components/chatbot/TriageView";
 import { ModelsView }   from "@/components/chatbot/ModelsView";
-import { HomeView }     from "../home/HomeView";
+import HomeView from "../home/HomeView"; 
 import { LeftSidebar }  from "@/components/nav/LeftSidebar";
 import { RightSidebar } from "@/components/nav/RightSidebar";
 import { TopBar }       from "@/components/nav/TopBar";

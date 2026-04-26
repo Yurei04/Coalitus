@@ -253,7 +253,7 @@ function AboutDeco() {
 /* ─────────────────────────────────────────────────────────── */
 /*  HomeView                                                   */
 /* ─────────────────────────────────────────────────────────── */
-export function HomeView({ onEnter }) {
+export default function HomeView({ onEnter }) {
   return (
     <>
       <style>{`
